@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 from pathlib import Path
-from typing import MutableMapping, Union, Any
+from typing import MutableMapping, Union, Tuple
 from collections import namedtuple
 
 
 class TrieNode:
-    def __init__(self, children: MutableMapping[str, Any] = {}, eow: bool = False):
-        self.children: MutableMapping[str, Any] = children
+    def __init__(self, children: MutableMapping[str, TrieNode] = {}, eow: bool = False):
+        self.children: MutableMapping[str, TrieNode] = children
         self.eow: bool = eow
         self.weight: int = 1 if eow else 0
 
-    def add(self, data) -> Any:
+        for _, child in children.items():
+            self.weight += child.weight
+
+    def add(self, data) -> TrieNode:
         self.weight += 1
 
         # on exact match, increment the weight and set eow
-        if match := self.children.get(data, False):
+        if match := self.children.get(data):
             match.weight += 1
             match.eow = True
 
@@ -33,27 +37,28 @@ class TrieNode:
 
         if not result:
             self.children[data] = TrieNode(eow=True, children={})
+            result = self.children[data]
+        return result
 
-    _SplitResult: namedtuple = namedtuple("_Split", ["prefix", "key", "data"])
+    def _splitter(self, key: str, data: str) -> Tuple:
 
-    def _splitter(self, key: str, data: str) -> _SplitResult:
-        idx = 0
+        result: namedtuple = namedtuple("_Split", ["prefix", "key", "data"])
 
         for idx, (k, d) in enumerate(zip(key, data), start=1):
             if k != d:
                 idx -= 1
                 break
 
-        return TrieNode._SplitResult(prefix=key[:idx], key=key[idx:], data=data[idx:])
+        return result(prefix=key[:idx], key=key[idx:], data=data[idx:])
 
     def __repr__(self):
 
-        return ", ".join(f'{{"{k}": [{n}]}}' for k, n in self.children.items())
+        return ", ".join(f'{{"{k}-{n.weight}": [{n}]}}' for k, n in self.children.items())
 
 
 if __name__ == "__main__":
     root = TrieNode()
-    with Path("long.txt").open("rt") as input_file:
+    with Path("words.txt").open("rt") as input_file:
         for line in input_file:
             node = root.add(line.rstrip())
     print(f"[{root}]")
