@@ -3,7 +3,7 @@ import sys
 import random
 
 
-def main(args):
+def main(args) -> None:
     read_length: int = int(args[0])
     num_reads: int = int(args[1])
 
