@@ -65,7 +65,6 @@ class TreeNode:
 
     def _find_closest_match(self, fragment: str) -> FindResult:
 
-        print(f"finding: {fragment}")
         # if we ave an exact match, return it
         if TreeEdge(fragment) in self._children.keys():
             return FindResult(node=self, split=SplitResult(matched_prefix=fragment))
@@ -73,7 +72,6 @@ class TreeNode:
         # loop through each edge and find the best match
         for edge, node in list(self._children.items()):
             split: SplitResult = TreeNode._split_word(fragment, edge)
-            print(split)
 
             if not split.matched_prefix:
                 continue
@@ -88,7 +86,6 @@ class TreeNode:
 
     @staticmethod
     def _split_word(word: str, edge: TreeEdge) -> SplitResult:
-        print(f"Splitting on word: {word} - edge: {edge}")
         for idx, (k, v) in enumerate(zip(word, edge), start=1):
             if k != v:
                 idx -= 1

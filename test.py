@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 from TreeNode import *
+import sys
+from pathlib import Path
 
 
-def main():
+def main(args):
     root = TreeNode(children={})
-    root.store_word("hello")
-    root.store_word("hello")
-    root.store_word("goodbye")
-    root.store_word("gojira")
-    root.store_word("hellen")
 
-    print(root)
+    with Path(args[0]).open("rt") as infile:
+        for line in infile:
+            root.store_word(line.rstrip())
+
+    print(f'[{root}]')
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
