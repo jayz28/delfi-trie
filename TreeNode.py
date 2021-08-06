@@ -52,20 +52,21 @@ class TreeNode:
         if not split.matched_prefix:
             node.children[split.remaining_word] = TreeNode(word)
             return
+
+        # if there is any remaining prefix, a split is necessary
         if split.remaining_prefix:
-            oldnode = node.children.pop(
-                str(split.matched_prefix + split.remaining_prefix)
-            )
+            oldnode = node.children.pop(str(split.matched_prefix + split.remaining_prefix))
             newnode = TreeNode(children={str(split.remaining_prefix): oldnode})
 
             node.children[str(split.matched_prefix)] = newnode
 
             node = newnode
 
+        # if there are any characters left, create a new child node for them
         if split.remaining_word:
             node.children[str(split.remaining_word)] = TreeNode(word)
         else:
-            node.set_is_word(word)
+            node.set_is_word(word)  # if there is nothing left, it was an exact match
 
     def find_word(self, word: str):
         pass
@@ -123,4 +124,4 @@ class TreeNode:
         )
 
     def __repr__(self):
-        return ", ".join(f'{{"{e}": [{n}]}}' for e, n in self.children.items())
+        return ", ".join(f'{{"{e}-{n._word}": [{n}]}}' for e, n in self.children.items())
