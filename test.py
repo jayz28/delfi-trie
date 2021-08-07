@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def main(args):
-    root = TreeNode(children={})
+    root = TreeNode("ROOT", children={})
 
     with Path(args[0]).open("rt") as infile:
         for line in infile:

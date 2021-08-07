@@ -39,10 +39,6 @@ class TreeNode:
     def is_word(self) -> bool:
         return True if self._word else False
 
-    @property
-    def increment_count(self) -> None:
-        self._count += 1
-
     def set_is_word(self, word: str) -> None:
         self._word = word
         self._count += 1
@@ -50,7 +46,7 @@ class TreeNode:
     def store_word(self, word: str):
         currentNode, split = self._find_closest_match(word)
 
-        # if there is no matched, add the fragment here
+        # if there is no match, create the new edge
         if not split.matched_prefix:
             currentNode.children[split.remaining_fragment] = TreeNode(word)
             return
@@ -61,10 +57,10 @@ class TreeNode:
             # remove the matched edge and the node it references
             oldNode = currentNode.children.pop(str(split.matched_prefix + split.remaining_prefix))
 
-            # create a new node, and attach the children
+            # create a new node, and attach the removed child node
             newNode = TreeNode(children={str(split.remaining_prefix): oldNode})
 
-            # add the new node to the found node
+            # add the new node to the current node
             currentNode.children[str(split.matched_prefix)] = newNode
             currentNode = newNode
 
