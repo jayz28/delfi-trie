@@ -53,7 +53,6 @@ class TreeNode:
         # if there is no matched, add the fragment here
         if not split.matched_prefix:
             node.children[split.remaining_fragment] = TreeNode(word)
-            print(self, file=sys.stderr)
             return
 
         # if there is any remaining prefix, a split is necessary
@@ -70,15 +69,18 @@ class TreeNode:
             node.children[str(split.remaining_fragment)] = TreeNode(word)
         else:
             node.set_is_word(word)  # if there is nothing left, it was an exact match
-        print(self, file=sys.stderr)
 
-    def find_word(self, word: str):
-        pass
+    def find_word(self, word: str) -> Union[TreeNode, None]:
+        result: FindResult = self._find_closest_match(word)
+
+        if result.node.is_word:
+            return result.node
+
+        return None
 
     def _find_closest_match(self, fragment: str) -> FindResult:
 
         result: FindResult = FindResult(node=self, split=SplitResult(remaining_fragment=fragment))
-        print(f"looking for {fragment}", file=sys.stderr)
 
         # on exact match, return the matched node and prefix
         if node := self.children.get(fragment, False):
@@ -88,45 +90,15 @@ class TreeNode:
             for edge, node in self.children.items():
                 split: SplitResult = TreeNode._split_word(fragment, edge)
                 if split.matched_prefix:
-                    print(split, file=sys.stderr)
                     result = FindResult(self, split)
 
-            # if there is no remaining prefix, keep searching
+            # if there is no remaining prefix, serch recursively
             if result.split.matched_prefix and not result.split.remaining_prefix:
                 result = result.node.children[result.split.matched_prefix]._find_closest_match(
                     result.split.remaining_fragment
                 )
 
-            # if not split.matched_prefix:
-            # continue
-
-            # if split.remaining_prefix:
-            # return FindResult(currentNode, split)
-
-            # if split.remaining_fragment:
-            # return node._find_closest_match(split.remaining_fragment)
-            # else:
-            # return FindResult(node, split)
-
         return result
-        # # if we ave an exact match, return it
-        # if TreeEdge(fragment) in self._children.keys():
-        # return FindResult(node=self, split=SplitResult(matched_prefix=fragment))
-
-        # # loop through each edge and find the best match
-        # for edge, node in list(self._children.items()):
-        # split: SplitResult = TreeNode._split_word(fragment, edge)
-
-        # if not split.matched_prefix:
-        # continue
-
-        # if split.remaining_prefix:
-        # return FindResult(node=self, split=split)
-
-        # if split.remaining_fragment != fragment:
-        # return node._find_closest_match(split.remaining_fragment)
-
-        # return FindResult(node=self, split=SplitResult(remaining_fragment=fragment))
 
     @staticmethod
     def _split_word(word: str, edge: str) -> SplitResult:
@@ -141,4 +113,6 @@ class TreeNode:
         )
 
     def __repr__(self):
-        return ", ".join(f'{{"{e}-{n._word}-{n._count}": [{n}]}}' for e, n in self.children.items())
+        children: str = ", ".join(f'{{"{e}": [{n}]}}' for e, n in self.children.items())
+        output: str = f'{{"word": "{self._word or "" }", "count": {self._count}, "children": [{children}]}}'
+        return output

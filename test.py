@@ -11,7 +11,7 @@ def main(args):
         for line in infile:
             root.store_word(line.rstrip())
 
-    print(f'[{root}]')
+    print(f"{root}")
 
 
 if __name__ == "__main__":
