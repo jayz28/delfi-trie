@@ -48,27 +48,31 @@ class TreeNode:
         self._count += 1
 
     def store_word(self, word: str):
-        node, split = self._find_closest_match(word)
+        currentNode, split = self._find_closest_match(word)
 
         # if there is no matched, add the fragment here
         if not split.matched_prefix:
-            node.children[split.remaining_fragment] = TreeNode(word)
+            currentNode.children[split.remaining_fragment] = TreeNode(word)
             return
 
         # if there is any remaining prefix, a split is necessary
         if split.remaining_prefix:
-            oldnode = node.children.pop(str(split.matched_prefix + split.remaining_prefix))
-            newnode = TreeNode(children={str(split.remaining_prefix): oldnode})
 
-            node.children[str(split.matched_prefix)] = newnode
+            # remove the matched edge and the node it references
+            oldNode = currentNode.children.pop(str(split.matched_prefix + split.remaining_prefix))
 
-            node = newnode
+            # create a new node, and attach the children
+            newNode = TreeNode(children={str(split.remaining_prefix): oldNode})
+
+            # add the new node to the found node
+            currentNode.children[str(split.matched_prefix)] = newNode
+            currentNode = newNode
 
         # if there are any characters left, create a new child node for them
         if split.remaining_fragment:
-            node.children[str(split.remaining_fragment)] = TreeNode(word)
+            currentNode.children[str(split.remaining_fragment)] = TreeNode(word)
         else:
-            node.set_is_word(word)  # if there is nothing left, it was an exact match
+            currentNode.set_is_word(word)  # if there is nothing left, it was an exact match
 
     def find_word(self, word: str) -> Union[TreeNode, None]:
         result: FindResult = self._find_closest_match(word)
