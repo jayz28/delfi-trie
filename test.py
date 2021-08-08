@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-from TreeNode import *
+from RadixTree import RadixTree
 import sys
 from pathlib import Path
+from json import dumps, loads
 
 
 def main(args):
-    root = TreeNode("ROOT", children={})
-
+    tree = RadixTree()
     with Path(args[0]).open("rt") as infile:
         for line in infile:
-            root.store_word(line.rstrip())
+            tree.store_word(line.rstrip())
 
-    print(f"{root}")
+    print(f"{dumps(tree._root)}")
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["words.txt"]
+            "args": ["shortest.txt"]
         }
     ]
 }
