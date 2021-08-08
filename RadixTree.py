@@ -13,7 +13,7 @@ from typing import (
 # TypedDict at runtime is a native dict, minimizing memory overhead
 class TreeNode(TypedDict):
     children: dict
-    word: str
+    word: int
     count: int
 
 
@@ -27,7 +27,7 @@ class RadixTree:
     _base_map: dict = {"N": 1, "A": 2, "T": 3, "C": 4, "G": 5}
 
     def __init__(self):
-        self._root = TreeNode(children={}, word="", count=0)
+        self._root = TreeNode(children={}, word=0, count=0)
 
     def store_word(self, word: str) -> None:
         node, split = self._find_node(word, self._root)
@@ -36,12 +36,14 @@ class RadixTree:
 
         # if there's no match, attach the whole word here
         if not split.match:
-            node["children"][get_int(word)] = TreeNode(children={}, word=word, count=1)
+            node["children"][get_int(split.fragment)] = TreeNode(
+                children={}, word=get_int(word), count=1
+            )
             return
 
         # if it's a perfect match, increment the count
         if not (split.new or split.fragment):
-            node["word"] = word
+            node["word"] = get_int(word)
             node["count"] += 1
             return
 
@@ -50,7 +52,7 @@ class RadixTree:
             old_key: int = get_int("".join([split.match, split.new]))
             old_node = node["children"].pop(old_key)
             new_node = TreeNode(
-                word="",
+                word=0,
                 children={
                     get_int(split.new): old_node,
                 },
@@ -59,14 +61,17 @@ class RadixTree:
             node["children"][get_int(split.match)] = new_node
             node = new_node
 
-        # if there's a fragment left
+        # if there's a fragment left, add it as a word
         if split.fragment:
             node["children"][get_int(split.fragment)] = TreeNode(
-                word=word, children={}, count=1
+                word=get_int(word), children={}, count=1
             )
 
     @staticmethod
     def _find_node(fragment: str, start: TreeNode) -> _FindResult:
+        """
+        Find the closest node to the fragment
+        """
         currentSplit: _EdgeSplit = _EdgeSplit(match="", new="", fragment=fragment)
         currentNode: TreeNode = start
 
@@ -127,3 +132,17 @@ class RadixTree:
             return "".join([base, RadixTree._get_str(next_val)])
         else:
             return ""
+
+    @staticmethod
+    def _render_node(node: TreeNode) -> str:
+        get_str: Callable[[int], str] = RadixTree._get_str
+        children: str = ", ".join(
+            f'{{ "{get_str(e)}" : {RadixTree._render_node(n)}  }}'
+            for e, n in node["children"].items()
+        )
+        output: str = f'{{"word": "{get_str(node["word"]) }", "count": {node["count"]}, "children": [{children}]}}'
+
+        return output
+
+    def __repr__(self):
+        return RadixTree._render_node(self._root)
