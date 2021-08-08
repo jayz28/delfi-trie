@@ -22,6 +22,8 @@ def main(args):
     print(f"tree: {sys.getsizeof(treebytes)}")
     print(f"root: {sys.getsizeof(rootbytes)}")
 
+    print(f'node: {tree.find_word("ATAACCTGAG")}')
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

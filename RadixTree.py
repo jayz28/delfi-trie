@@ -29,6 +29,10 @@ class RadixTree:
     def __init__(self):
         self._root = TreeNode(children={}, word=0, count=0)
 
+    def find_word(self, word: str) -> Union[TreeNode, None]:
+        result: _FindResult = RadixTree._find_node(word, self._root)
+        return result.node if result.node["word"] == RadixTree._get_int(word) else None
+
     def store_word(self, word: str) -> None:
         node, split = self._find_node(word, self._root)
 
@@ -36,9 +40,7 @@ class RadixTree:
 
         # if there's no match, attach the whole word here
         if not split.match:
-            node["children"][get_int(split.fragment)] = TreeNode(
-                children={}, word=get_int(word), count=1
-            )
+            node["children"][get_int(split.fragment)] = TreeNode(children={}, word=get_int(word), count=1)
             return
 
         # if it's a perfect match, increment the count
@@ -63,9 +65,7 @@ class RadixTree:
 
         # if there's a fragment left, add it as a word
         if split.fragment:
-            node["children"][get_int(split.fragment)] = TreeNode(
-                word=get_int(word), children={}, count=1
-            )
+            node["children"][get_int(split.fragment)] = TreeNode(word=get_int(word), children={}, count=1)
 
     @staticmethod
     def _find_node(fragment: str, start: TreeNode) -> _FindResult:
@@ -94,9 +94,7 @@ class RadixTree:
             return _FindResult(currentNode["children"][matchint], currentSplit)
 
         # otherwise, recurse and keep searching
-        return RadixTree._find_node(
-            currentSplit.fragment, start=currentNode["children"][matchint]
-        )
+        return RadixTree._find_node(currentSplit.fragment, start=currentNode["children"][matchint])
 
     @staticmethod
     def _split_edge(edge: str, fragment: str) -> _EdgeSplit:
@@ -137,8 +135,7 @@ class RadixTree:
     def _render_node(node: TreeNode) -> str:
         get_str: Callable[[int], str] = RadixTree._get_str
         children: str = ", ".join(
-            f'{{ "{get_str(e)}" : {RadixTree._render_node(n)}  }}'
-            for e, n in node["children"].items()
+            f'{{ "{get_str(e)}" : {RadixTree._render_node(n)}  }}' for e, n in node["children"].items()
         )
         output: str = f'{{"word": "{get_str(node["word"]) }", "count": {node["count"]}, "children": [{children}]}}'
 
