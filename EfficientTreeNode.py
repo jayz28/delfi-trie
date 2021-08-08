@@ -112,4 +112,4 @@ class RadixTree:
             base: str = list(RadixTree._base_map.keys())[wordint - (next_val << 3) - 1]
             return "".join([base, RadixTree._get_str(next_val)])
         else:
-            return """
+            return ""
