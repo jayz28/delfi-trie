@@ -199,13 +199,10 @@ class SuffixTree(RadixTree):
         """
         Recursively sum counts of child nodes
         """
-        count: int = 0
-        count += start["count"]
-        if not start["children"]:
-            return count
-
-        count += sum(
-            [SuffixTree._sum_counts(node) for _, node in start["children"].items()]
-        )
+        count: int = start["count"]
+        if start["children"]:
+            count += sum(
+                [SuffixTree._sum_counts(node) for _, node in start["children"].items()]
+            )
 
         return count
