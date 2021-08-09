@@ -20,7 +20,11 @@ _FindResult = NamedTuple("_FindResult", [("node", TreeNode), ("split", _EdgeSpli
 
 
 class RadixTree:
+    """
+    Implement radix tree for better space efficiency
+    """
 
+    # map bases to 3bit integers, reserve 0 for "no word"
     _base_map: dict = {"N": 1, "A": 2, "T": 3, "C": 4, "G": 5}
 
     def __init__(self):
@@ -38,16 +42,13 @@ class RadixTree:
         # if there's no match, attach the whole word here
         if not split.match:
             node["children"][get_int(split.fragment)] = TreeNode(
-                # children={}, word=get_int(word), count=1
                 children={},
-                # word=0,
                 count=1,
             )
             return
 
         # if it's a perfect match, increment the count
         if not (split.new or split.fragment):
-            # node["word"] = get_int(word)
             node["count"] += 1
             return
 
@@ -56,7 +57,6 @@ class RadixTree:
             old_key: int = get_int("".join([split.match, split.new]))
             old_node = node["children"].pop(old_key)
             new_node = TreeNode(
-                # word=0,
                 children={
                     get_int(split.new): old_node,
                 },
@@ -68,8 +68,6 @@ class RadixTree:
         # if there's a fragment left, add it as a word
         if split.fragment:
             node["children"][get_int(split.fragment)] = TreeNode(
-                # word=get_int(word), children={}, count=1
-                # word=0,
                 children={},
                 count=1,
             )
@@ -111,8 +109,8 @@ class RadixTree:
         Split edge if necessary, calculate remaining fragment
         """
         idx: int = 0
-        for idx, (k, v) in enumerate(zip(edge, fragment), start=1):
-            if k != v:
+        for idx, (e, f) in enumerate(zip(edge, fragment), start=1):
+            if e != f:
                 idx -= 1
                 break
         return _EdgeSplit(match=edge[:idx], new=edge[idx:], fragment=fragment[idx:])
@@ -146,12 +144,10 @@ class RadixTree:
         """
         Recursively render nodes
         """
-        get_str: Callable[[int], str] = RadixTree._get_str
         children: str = ", ".join(
-            f'{{ "{get_str(e)}" : {RadixTree._render_node(n)}  }}'
+            f'{{ "{RadixTree._get_str(e)}" : {RadixTree._render_node(n)}  }}'
             for e, n in node["children"].items()
         )
-        # output: str = f'{{"word": "{get_str(node["word"]) }", "count": {node["count"]}, "children": [{children}]}}'
         output: str = f'{{"count": {node["count"]}, "children": [{children}]}}'
 
         return output
@@ -162,7 +158,7 @@ class RadixTree:
 
 class SuffixTree(RadixTree):
     """
-    Override store_word to store every suffix of a word
+    Override store_word in base RadixTree to store every suffix of the word
     """
 
     def store_word(self, word: str) -> None:
@@ -170,6 +166,9 @@ class SuffixTree(RadixTree):
             super().store_word(word[idx:])
 
     def count_fraction(self, target_set: Iterable[str]) -> float:
+        """
+        Count the fraction of the target set
+        """
 
         total_chars: int = SuffixTree._sum_counts(self._root)
         sum_total: int = 0
@@ -183,7 +182,6 @@ class SuffixTree(RadixTree):
         """
         Count the occurence of the search pattern
         """
-        count: int = 0
         result: _FindResult = self._find_node(pattern, self._root)
         if result.split.match and not result.split.fragment:
             return SuffixTree._sum_counts(result.node)
