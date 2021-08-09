@@ -13,8 +13,8 @@ from typing import (
 # TypedDict at runtime is a native dict, minimizing memory overhead
 class TreeNode(TypedDict):
     children: dict
-    word: int
     count: int
+    # word: int  # full word is stored only for debugging purposes
 
 
 # Lightweight NamedTuple protocol to reduce mistakes
@@ -31,7 +31,11 @@ class RadixTree:
 
     def find_word(self, word: str) -> Union[TreeNode, None]:
         result: _FindResult = RadixTree._find_node(word, self._root)
-        return result.node if result.node["word"] == RadixTree._get_int(word) else None
+        return result.node if result.node["count"] > 0 else None
+
+    def store_suffix(self, word: str) -> None:
+        for idx in range(len(word)):
+            self.store_word(word[idx:])
 
     def store_word(self, word: str) -> None:
         node, split = self._find_node(word, self._root)
@@ -40,12 +44,17 @@ class RadixTree:
 
         # if there's no match, attach the whole word here
         if not split.match:
-            node["children"][get_int(split.fragment)] = TreeNode(children={}, word=get_int(word), count=1)
+            node["children"][get_int(split.fragment)] = TreeNode(
+                # children={}, word=get_int(word), count=1
+                children={},
+                # word=0,
+                count=1,
+            )
             return
 
         # if it's a perfect match, increment the count
         if not (split.new or split.fragment):
-            node["word"] = get_int(word)
+            # node["word"] = get_int(word)
             node["count"] += 1
             return
 
@@ -54,18 +63,23 @@ class RadixTree:
             old_key: int = get_int("".join([split.match, split.new]))
             old_node = node["children"].pop(old_key)
             new_node = TreeNode(
-                word=0,
+                # word=0,
                 children={
                     get_int(split.new): old_node,
                 },
-                count=0,
+                count=1 if not split.fragment else 0,
             )
             node["children"][get_int(split.match)] = new_node
             node = new_node
 
         # if there's a fragment left, add it as a word
         if split.fragment:
-            node["children"][get_int(split.fragment)] = TreeNode(word=get_int(word), children={}, count=1)
+            node["children"][get_int(split.fragment)] = TreeNode(
+                # word=get_int(word), children={}, count=1
+                # word=0,
+                children={},
+                count=1,
+            )
 
     @staticmethod
     def _find_node(fragment: str, start: TreeNode) -> _FindResult:
@@ -94,13 +108,16 @@ class RadixTree:
             return _FindResult(currentNode["children"][matchint], currentSplit)
 
         # otherwise, recurse and keep searching
-        return RadixTree._find_node(currentSplit.fragment, start=currentNode["children"][matchint])
+        return RadixTree._find_node(
+            currentSplit.fragment, start=currentNode["children"][matchint]
+        )
 
     @staticmethod
     def _split_edge(edge: str, fragment: str) -> _EdgeSplit:
         """
         Split edge if necessary, calculate remaining fragment
         """
+        idx: int = 0
         for idx, (k, v) in enumerate(zip(edge, fragment), start=1):
             if k != v:
                 idx -= 1
@@ -135,9 +152,11 @@ class RadixTree:
     def _render_node(node: TreeNode) -> str:
         get_str: Callable[[int], str] = RadixTree._get_str
         children: str = ", ".join(
-            f'{{ "{get_str(e)}" : {RadixTree._render_node(n)}  }}' for e, n in node["children"].items()
+            f'{{ "{get_str(e)}" : {RadixTree._render_node(n)}  }}'
+            for e, n in node["children"].items()
         )
-        output: str = f'{{"word": "{get_str(node["word"]) }", "count": {node["count"]}, "children": [{children}]}}'
+        # output: str = f'{{"word": "{get_str(node["word"]) }", "count": {node["count"]}, "children": [{children}]}}'
+        output: str = f'{{"count": {node["count"]}, "children": [{children}]}}'
 
         return output
 

@@ -1,0 +1,5 @@
+ACTG
+AACT
+TCAGG
+TTGGA
+

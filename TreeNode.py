@@ -55,7 +55,9 @@ class TreeNode:
         if split.remaining_prefix:
 
             # remove the matched edge and the node it references
-            oldNode = currentNode.children.pop(str(split.matched_prefix + split.remaining_prefix))
+            oldNode = currentNode.children.pop(
+                str(split.matched_prefix + split.remaining_prefix)
+            )
 
             # create a new node, and attach the removed child node
             newNode = TreeNode(children={str(split.remaining_prefix): oldNode})
@@ -68,7 +70,9 @@ class TreeNode:
         if split.remaining_fragment:
             currentNode.children[str(split.remaining_fragment)] = TreeNode(word)
         else:
-            currentNode.set_is_word(word)  # if there is nothing left, it was an exact match
+            currentNode.set_is_word(
+                word
+            )  # if there is nothing left, it was an exact match
 
     def find_word(self, word: str) -> Union[TreeNode, None]:
         result: FindResult = self._find_closest_match(word)
@@ -80,11 +84,15 @@ class TreeNode:
 
     def _find_closest_match(self, fragment: str) -> FindResult:
 
-        result: FindResult = FindResult(node=self, split=SplitResult(remaining_fragment=fragment))
+        result: FindResult = FindResult(
+            node=self, split=SplitResult(remaining_fragment=fragment)
+        )
 
         # on exact match, return the matched node and prefix
         if node := self.children.get(fragment, False):
-            result = FindResult(cast(TreeNode, node), SplitResult(matched_prefix=fragment))
+            result = FindResult(
+                cast(TreeNode, node), SplitResult(matched_prefix=fragment)
+            )
         else:
             # loop through each edge to find a match
             for edge, node in self.children.items():
@@ -94,14 +102,15 @@ class TreeNode:
 
             # if there is no remaining prefix, serch recursively
             if result.split.matched_prefix and not result.split.remaining_prefix:
-                result = result.node.children[result.split.matched_prefix]._find_closest_match(
-                    result.split.remaining_fragment
-                )
+                result = result.node.children[
+                    result.split.matched_prefix
+                ]._find_closest_match(result.split.remaining_fragment)
 
         return result
 
     @staticmethod
     def _split_word(word: str, edge: str) -> SplitResult:
+        idx: int = 0
         for idx, (k, v) in enumerate(zip(word, edge), start=1):
             if k != v:
                 idx -= 1

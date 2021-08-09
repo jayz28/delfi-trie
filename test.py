@@ -9,10 +9,10 @@ from pickle import loads, dumps
 
 def main(args):
     tree = RadixTree()
-    root = TreeNode()
+    root = RadixTree()
     with Path(args[0]).open("rt") as infile:
         for line in infile:
-            tree.store_word(line.rstrip())
+            tree.store_suffix(line.rstrip())
             root.store_word(line.rstrip())
 
     treebytes = dumps(tree)
