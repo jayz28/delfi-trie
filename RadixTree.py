@@ -1,12 +1,10 @@
 from __future__ import annotations
 from typing import (
     TypedDict,
-    MutableMapping,
     Union,
     NamedTuple,
-    Tuple,
     Callable,
-    Optional,
+    Iterable,
 )
 
 
@@ -14,7 +12,6 @@ from typing import (
 class TreeNode(TypedDict):
     children: dict
     count: int
-    # word: int  # full word is stored only for debugging purposes
 
 
 # Lightweight NamedTuple protocol to reduce mistakes
@@ -32,10 +29,6 @@ class RadixTree:
     def find_word(self, word: str) -> Union[TreeNode, None]:
         result: _FindResult = RadixTree._find_node(word, self._root)
         return result.node if result.node["count"] > 0 else None
-
-    def store_suffix(self, word: str) -> None:
-        for idx in range(len(word)):
-            self.store_word(word[idx:])
 
     def store_word(self, word: str) -> None:
         node, split = self._find_node(word, self._root)
@@ -150,6 +143,9 @@ class RadixTree:
 
     @staticmethod
     def _render_node(node: TreeNode) -> str:
+        """
+        Recursively render nodes
+        """
         get_str: Callable[[int], str] = RadixTree._get_str
         children: str = ", ".join(
             f'{{ "{get_str(e)}" : {RadixTree._render_node(n)}  }}'
@@ -162,3 +158,50 @@ class RadixTree:
 
     def __repr__(self):
         return RadixTree._render_node(self._root)
+
+
+class SuffixTree(RadixTree):
+    """
+    Override store_word to store every suffix of a word
+    """
+
+    def store_word(self, word: str) -> None:
+        for idx in range(len(word)):
+            super().store_word(word[idx:])
+
+    def count_fraction(self, target_set: Iterable[str]) -> float:
+
+        total_chars: int = SuffixTree._sum_counts(self._root)
+        sum_total: int = 0
+        for char in target_set:
+            assert len(char) == 1
+            sum_total += self.count_occurrence(char)
+
+        return sum_total / total_chars
+
+    def count_occurrence(self, pattern: str) -> int:
+        """
+        Count the occurence of the search pattern
+        """
+        count: int = 0
+        result: _FindResult = self._find_node(pattern, self._root)
+        if result.split.match and not result.split.fragment:
+            return SuffixTree._sum_counts(result.node)
+
+        return 0
+
+    @staticmethod
+    def _sum_counts(start: TreeNode) -> int:
+        """
+        Recursively sum counts of child nodes
+        """
+        count: int = 0
+        count += start["count"]
+        if not start["children"]:
+            return count
+
+        count += sum(
+            [SuffixTree._sum_counts(node) for _, node in start["children"].items()]
+        )
+
+        return count
