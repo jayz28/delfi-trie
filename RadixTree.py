@@ -25,16 +25,22 @@ class RadixTree:
     """
 
     # map bases to 3bit integers, reserve 0 for "no word"
-    _base_map: dict = {"N": 1, "A": 2, "T": 3, "C": 4, "G": 5}
+    _base_map: dict = {"N": 0b001, "A": 0b010, "T": 0b011, "C": 0b100, "G": 0b101}
 
     def __init__(self):
         self._root = TreeNode(children={}, word=0, count=0)
 
     def find_word(self, word: str) -> Union[TreeNode, None]:
+        """
+        Returns leaf node representing word, or None
+        """
         result: _FindResult = RadixTree._find_node(word, self._root)
         return result.node if result.node["count"] > 0 else None
 
     def store_word(self, word: str) -> None:
+        """
+        Stores new word into trie
+        """
         node, split = self._find_node(word, self._root)
 
         get_int: Callable[[str], int] = RadixTree._get_int
