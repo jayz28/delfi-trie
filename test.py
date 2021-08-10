@@ -27,7 +27,7 @@ def main(args):
     print(f'node: {tree.find_word("ATAACCTGAG")}')
 
     print(root.count_occurrence("GG"))
-    print(root.count_fraction(["C", "G"]))
+    print(root.count_fraction(["G", "C"]))
 
 
 if __name__ == "__main__":
