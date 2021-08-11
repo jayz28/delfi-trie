@@ -200,7 +200,12 @@ class SuffixTree(RadixTree):
         """
         result: _FindResult = self._find_node(pattern, self._root)
         if result.split.match and not result.split.fragment:
-            return SuffixTree._sum_counts(result.node)
+
+            if result.split.new:
+                return SuffixTree._sum_counts(result.node["children"][self._get_int(result.split.match + result.split.new)])
+            else:
+                return SuffixTree._sum_counts(result.node)
+
 
         return 0
 

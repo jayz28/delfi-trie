@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-from RadixTree import RadixTree, SuffixTree
-from TreeNode import TreeNode
+from tries import RadixTree, SuffixTree, TreeNode
 
 import sys
 from pathlib import Path
