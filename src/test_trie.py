@@ -21,3 +21,6 @@ def test_suffix_store(test_trees):
     assert suffix_tree.count_occurrence("TC") == 1
     assert suffix_tree.count_occurrence("NNN") == 0
     assert suffix_tree.count_occurrence("ATC") == 1
+    suffix_tree.store_word("ACTCT")
+    assert suffix_tree.count_occurrence("TC") == 2
+    assert suffix_tree.count_occurrence("CT") == 2
